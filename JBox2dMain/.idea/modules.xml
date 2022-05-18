@@ -2,8 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/JBox2dMain.iml" filepath="$PROJECT_DIR$/JBox2dMain.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/JBox2dMain.iml" filepath="$PROJECT_DIR$/.idea/modules/JBox2dMain.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/JBox2dMain.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/JBox2dMain.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/JBox2dMain.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/JBox2dMain.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/JBox2dMain.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/JBox2dMain.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/JBox2dMain.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/JBox2dMain.app.unitTest.iml" />
     </modules>
   </component>
 </project>
