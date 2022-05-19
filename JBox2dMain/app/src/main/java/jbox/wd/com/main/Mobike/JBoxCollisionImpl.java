@@ -240,4 +240,18 @@ public class JBoxCollisionImpl {
             }
         }
     }
+
+    public void RemoveOneBody(){
+        int childCount = viewGroup.getChildCount();
+        if (childCount == 0)
+            return;
+
+        View view = viewGroup.getChildAt(0);
+        Body body = (Body) view.getTag(R.id.wd_view_body_tag);
+        if (body != null) {
+            mWorld.destroyBody(body);
+        }
+        view.setTag(R.id.wd_view_body_tag, null);
+        viewGroup.removeView(view);
+    }
 }

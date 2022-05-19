@@ -37,10 +37,10 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
             binding.jboxContainer.onRandomChanged()
         }
         binding.btnMinus.setOnClickListener {
-            binding.jboxContainer.apply {
-                removeView(getChildAt(0))
+            binding.jboxContainer.run {
+                RemoveOneBody()
+                onRandomChanged()
             }
-            binding.jboxContainer.onRandomChanged()
         }
     }
 
