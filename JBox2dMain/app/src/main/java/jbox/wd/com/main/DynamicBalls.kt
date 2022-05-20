@@ -96,7 +96,6 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
         imageView.setTag(R.id.wd_view_circle_tag, true)
         imageView.setTag(R.id.tag_view_last_rotation, imageView.rotation)
         imageView.setTag(R.id.tag_view_is_rolling, false)
-        imageView.setTag(R.id.tag_view_velocity, 0)
         imageView.setTag(R.id.tag_view_where_am_i, IN_AIR)
         imageView.id = ballCount++
         binding.jboxContainer.addView(imageView, layoutParams)
