@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Gravity
 import android.view.MenuItem
-import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import jbox.wd.com.main.databinding.ActivityMobikeDemoBinding

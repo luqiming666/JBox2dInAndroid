@@ -3,6 +3,9 @@ package jbox.wd.com.main.Mobike;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.jbox2d.callbacks.ContactImpulse;
+import org.jbox2d.callbacks.ContactListener;
+import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.collision.shapes.Shape;
@@ -12,6 +15,7 @@ import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.contacts.Contact;
 
 import java.util.Random;
 
@@ -32,6 +36,30 @@ public class JBoxCollisionImpl {
     private float mFrictionRatio = 0.8f;
     private float mRestitutionRatio = 0.6f;
 
+    private OnCollisionListener onCollisionListener = null;
+    private ContactListener contactListener = new ContactListener() {
+        @Override
+        public void beginContact(Contact contact) {
+            if (onCollisionListener != null) {
+                onCollisionListener.onCollisionEntered((int)contact.getFixtureA().getUserData(),
+                        (int)contact.getFixtureB().getUserData());
+            }
+        }
+
+        @Override
+        public void endContact(Contact contact) {
+            if (onCollisionListener != null) {
+                onCollisionListener.onCollisionExited((int)contact.getFixtureA().getUserData(),
+                        (int)contact.getFixtureB().getUserData());
+            }
+        }
+
+        @Override
+        public void preSolve(Contact contact, Manifold oldManifold) {}
+
+        @Override
+        public void postSolve(Contact contact, ContactImpulse impulse) {}
+    };
 
     public JBoxCollisionImpl(ViewGroup viewGroup) {
         this.viewGroup = viewGroup;
@@ -41,6 +69,7 @@ public class JBoxCollisionImpl {
     private void createWorld() {
         if (mWorld == null) {
             mWorld = new World(new Vec2(0, 10.0f));
+            mWorld.setContactListener(contactListener);
             updateTopAndBottomBounds();
             updateLeftAndRightBounds();
         }
@@ -78,6 +107,7 @@ public class JBoxCollisionImpl {
         def.density = mDensity;
         def.friction = mFrictionRatio;
         def.restitution = mRestitutionRatio;
+        def.userData = view.getId();
 
         Body body = mWorld.createBody(bodyDef);
         body.createFixture(def);
@@ -130,10 +160,12 @@ public class JBoxCollisionImpl {
 
         bodyDef.position.set(0, -hy);
         Body topBody = mWorld.createBody(bodyDef);
+        def.userData = R.id.physics_bound_top;
         topBody.createFixture(def);
 
         bodyDef.position.set(0, mappingView2Body(mWorldHeight) + hy);
         Body bottomBody = mWorld.createBody(bodyDef);
+        def.userData = R.id.physics_bound_bottom;
         bottomBody.createFixture(def);
     }
 
@@ -154,10 +186,12 @@ public class JBoxCollisionImpl {
 
         bodyDef.position.set(-hx, hy);
         Body leftBody = mWorld.createBody(bodyDef);
+        def.userData = R.id.physics_bound_left;
         leftBody.createFixture(def);
 
         bodyDef.position.set(mappingView2Body(mWorldWidth) + hx, 0);
         Body rightBody = mWorld.createBody(bodyDef);
+        def.userData = R.id.physics_bound_right;
         rightBody.createFixture(def);
     }
 
@@ -241,7 +275,7 @@ public class JBoxCollisionImpl {
         }
     }
 
-    public void RemoveOneBody(){
+    public void removeOneBody(){
         int childCount = viewGroup.getChildCount();
         if (childCount == 0)
             return;
@@ -250,8 +284,12 @@ public class JBoxCollisionImpl {
         Body body = (Body) view.getTag(R.id.wd_view_body_tag);
         if (body != null) {
             mWorld.destroyBody(body);
+            view.setTag(R.id.wd_view_body_tag, null);
         }
-        view.setTag(R.id.wd_view_body_tag, null);
         viewGroup.removeView(view);
+    }
+
+    public void setOnCollisionListener(OnCollisionListener listener) {
+        this.onCollisionListener = listener;
     }
 }

@@ -51,7 +51,9 @@ public class JBoxCollisionView extends FrameLayout {
         jboxImpl.onRandomChanged();
     }
 
-    public void RemoveOneBody(){
-        jboxImpl.RemoveOneBody();
+    public void removeOneBody() { jboxImpl.removeOneBody(); }
+
+    public void setOnCollisionListener(OnCollisionListener listener) {
+        jboxImpl.setOnCollisionListener(listener);
     }
 }

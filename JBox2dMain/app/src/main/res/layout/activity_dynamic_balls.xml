@@ -24,6 +24,7 @@
             android:layout_marginTop="0dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="5dp"
+            android:textSize="22sp"
             android:text="+"/>
         <Button
             android:id="@+id/btnMinus"
@@ -33,6 +34,7 @@
             android:layout_marginTop="0dp"
             android:layout_marginStart="5dp"
             android:layout_marginEnd="10dp"
+            android:textSize="22sp"
             android:text="-"/>
 
     </LinearLayout>
