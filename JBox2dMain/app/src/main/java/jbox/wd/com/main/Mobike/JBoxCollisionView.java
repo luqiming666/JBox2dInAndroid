@@ -56,4 +56,8 @@ public class JBoxCollisionView extends FrameLayout {
     public void setOnCollisionListener(OnCollisionListener listener) {
         jboxImpl.setOnCollisionListener(listener);
     }
+
+    public void changeWorldGravity(float gravityX, float gravityY) {
+        jboxImpl.changeWorldGravity(gravityX, gravityY);
+    }
 }

@@ -2,6 +2,10 @@
 <resources>
     <item name="wd_view_circle_tag" type="id" />
     <item name="wd_view_body_tag" type="id" />
+    <item name="tag_view_where_am_i" type="id" />
+    <item name="tag_view_last_rotation" type="id" />
+    <item name="tag_view_is_rolling" type="id" />
+
     <item name="physics_bound_top" type="id" />
     <item name="physics_bound_bottom" type="id" />
     <item name="physics_bound_left" type="id" />

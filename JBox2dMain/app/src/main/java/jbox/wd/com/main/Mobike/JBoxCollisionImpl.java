@@ -136,7 +136,7 @@ public class JBoxCollisionImpl {
             if (isBodyView(view)) {
                 view.setX(getViewX(view));
                 view.setY(getViewY(view));
-                view.setRotation(getViewRotaion(view));
+                view.setRotation(getViewRotation(view));
             }
         }
         viewGroup.invalidate();
@@ -244,7 +244,7 @@ public class JBoxCollisionImpl {
         return 0;
     }
 
-    public float getViewRotaion(View view) {
+    public float getViewRotation(View view) {
         Body body = (Body) view.getTag(R.id.wd_view_body_tag);
         if (body != null) {
             float angle = body.getAngle();
@@ -263,7 +263,7 @@ public class JBoxCollisionImpl {
         }
     }
 
-    public void onRandomChanged(){
+    public void onRandomChanged() {
         int childCount = viewGroup.getChildCount();
         float x = random.nextInt(800) - 800;
         float y = random.nextInt(800) - 800;
@@ -272,6 +272,12 @@ public class JBoxCollisionImpl {
             if (isBodyView(view)) {
                 applyLinearImpulse(x, y, view);
             }
+        }
+    }
+
+    public void changeWorldGravity(float gravityX, float gravityY) {
+        if (mWorld != null) {
+            mWorld.setGravity(new Vec2(gravityX, gravityY));
         }
     }
 
