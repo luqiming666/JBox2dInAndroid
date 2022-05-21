@@ -22,6 +22,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.util.*
+import kotlin.math.abs
 
 class DynamicBalls : AppCompatActivity(), SensorEventListener {
 
@@ -33,7 +34,7 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
     private var sensor: Sensor? = null
     private lateinit var gimbal: Gimbal
 
-    private var ballCount = 0
+    private var ballIndex = 0
     private val rollingMonitor = Timer()
     private lateinit var rollingMonitorTask: TimerTask
 
@@ -71,18 +72,22 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
             binding.jboxContainer.onRandomChanged()
         }
         binding.btnAdd.setOnClickListener {
-            addOneBall()
-            binding.jboxContainer.requestLayout()
+            if (binding.jboxContainer.childCount < 5) { // 5 balls at most
+                addOneBall()
+                binding.jboxContainer.requestLayout()
+            }
         }
         binding.btnMinus.setOnClickListener {
             binding.jboxContainer.run {
-                removeOneBody()
-                requestLayout()
+                if (childCount > 1) {
+                    removeOneBody()
+                    requestLayout()
+                }
             }
         }
 
         rollingMonitorTask = RollingBallMonitorTask(this)
-        rollingMonitor.schedule(rollingMonitorTask, 0, 500)
+        rollingMonitor.schedule(rollingMonitorTask, 0, 100)
     }
 
     private fun addOneBall() {
@@ -97,7 +102,7 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
         imageView.setTag(R.id.tag_view_last_rotation, imageView.rotation)
         imageView.setTag(R.id.tag_view_is_rolling, false)
         imageView.setTag(R.id.tag_view_where_am_i, IN_AIR)
-        imageView.id = ballCount++
+        imageView.id = ballIndex++
         binding.jboxContainer.addView(imageView, layoutParams)
     }
 
@@ -112,7 +117,10 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onDestroy() {
+        RichTapUtils.getInstance().stop()
         RichTapUtils.getInstance().quit()
+        rollingMonitorTask.cancel()
+
         super.onDestroy()
     }
 
@@ -192,7 +200,7 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
         var vel: Int = 10
         try {
             val body = view.getTag(R.id.wd_view_body_tag) as Body
-            vel = (body?.linearVelocity.normalize() / 5.0 * 255).toInt()
+            vel = (body.linearVelocity.normalize() / 5.0 * 255).toInt()
             if (vel > 255) vel = 255
         } catch (e: Exception) {
             e.printStackTrace()
@@ -200,26 +208,40 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
         return vel
     }
 
-    fun monitorRollingBalls() {
-        val childCount = binding.jboxContainer.childCount
-        for (i in 0 until childCount) {
+    private fun monitorRollingBalls() {
+        var isAllInAir = true
+
+        for (i in 0 until binding.jboxContainer.childCount) {
             val view = binding.jboxContainer.getChildAt(i)
             val location = view.getTag(R.id.tag_view_where_am_i)
             if (location != IN_AIR) {
+                isAllInAir = false
+
                 val lastRotation = view.getTag(R.id.tag_view_last_rotation) as Float
                 val isRolling = view.getTag(R.id.tag_view_is_rolling) as Boolean
-                if (view.rotation != lastRotation) {
+                if (abs(view.rotation - lastRotation) > 0.01F) {
+                    view.setTag(R.id.tag_view_last_rotation, view.rotation)
                     // The ball is rolling on the edge!
                     if (!isRolling) {
                         view.setTag(R.id.tag_view_is_rolling, true)
-                        val amplitude = getNormalizedVelocity(view)
-                        RichTapUtils.getInstance().playHaptic(heBallRoll, -1, amplitude)
+                        //val amplitude = getNormalizedVelocity(view)
+                        RichTapUtils.getInstance().playHaptic(heBallRoll, -1, 100)
                     } else {
                         // Adjust amplitude based on ball's rolling speed
                         //RichTapUtils.getInstance().sendLoopParameter(amplitude, 0)
                     }
+                } else {
+                    // The ball has stopped rolling
+                    view.setTag(R.id.tag_view_is_rolling, false)
+                    if (isRolling) {
+                        RichTapUtils.getInstance().stop() // TODO: only stop the rolling effect
+                    }
                 }
             }
+        }
+
+        if (isAllInAir) {
+            RichTapUtils.getInstance().stop()
         }
     }
 

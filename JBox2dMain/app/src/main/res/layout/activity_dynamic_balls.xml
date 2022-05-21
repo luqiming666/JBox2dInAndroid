@@ -23,23 +23,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
-            android:id="@+id/btnImpulse"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginTop="0dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="5dp"
-            android:textAllCaps="false"
-            android:textSize="18sp"
-            android:text="Impulse"/>
-        <Button
             android:id="@+id/btnAdd"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginTop="0dp"
-            android:layout_marginStart="5dp"
+            android:layout_marginStart="10dp"
             android:layout_marginEnd="5dp"
             android:textSize="18sp"
             android:text="+"/>
@@ -50,10 +39,20 @@
             android:layout_weight="1"
             android:layout_marginTop="0dp"
             android:layout_marginStart="5dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="5dp"
             android:textSize="18sp"
             android:text="-"/>
-
+        <Button
+            android:id="@+id/btnImpulse"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="10dp"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:text="Impulse"/>
     </LinearLayout>
 
 

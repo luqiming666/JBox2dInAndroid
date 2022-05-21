@@ -69,6 +69,7 @@ public class JBoxCollisionImpl {
     private void createWorld() {
         if (mWorld == null) {
             mWorld = new World(new Vec2(0, 10.0f));
+            mWorld.setAllowSleep(false);
             mWorld.setContactListener(contactListener);
             updateTopAndBottomBounds();
             updateLeftAndRightBounds();
@@ -85,7 +86,6 @@ public class JBoxCollisionImpl {
                 }
             }
         }
-
     }
 
     private void createBody(View view) {
