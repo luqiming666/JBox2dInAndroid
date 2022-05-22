@@ -8,10 +8,12 @@ import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
 import android.view.Gravity
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.apprichtap.haptic.RichTapUtils
 import com.commit451.gimbal.Gimbal
@@ -127,9 +129,27 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
         super.onDestroy()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+
+            R.id.about -> {
+                AlertDialog.Builder(this).apply {
+                    setTitle("About...")
+                    setMessage("App Version: ${BuildConfig.VERSION_NAME}\n" +
+                            "RichTap SDK: ${RichTapUtils.VERSION_NAME}")
+                    setCancelable(true)
+                    setPositiveButton("OK") { _, _ ->}
+                    show()
+                }
+            }
+
+            R.id.close -> finish()
         }
         return super.onOptionsItemSelected(item)
     }
