@@ -34,6 +34,7 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
     private lateinit var gimbal: Gimbal
 
     private var ballIndex = 0
+    private val magicCode = 888F
     private val rollingMonitor = Timer()
     private lateinit var rollingMonitorTask: TimerTask
 
@@ -98,7 +99,7 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
         val imageView = ImageView(this)
         imageView.setImageResource(R.mipmap.share_tw)
         imageView.setTag(R.id.wd_view_circle_tag, true)
-        imageView.setTag(R.id.tag_view_last_rotation, imageView.rotation)
+        imageView.setTag(R.id.tag_view_last_rotation, magicCode)
         imageView.setTag(R.id.tag_view_is_rolling, false)
         imageView.setTag(R.id.tag_view_contacted_bound_count, 0)
         imageView.id = ballIndex++
@@ -142,22 +143,20 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
 
     private val onCollisionListener = object : OnCollisionListener {
         override fun onCollisionEntered(viewIdA: Int, viewIdB: Int) {
-            Log.i(TAG, "${getViewName(viewIdA)} is collided with ${getViewName(viewIdB)}")
+            Log.i(TAG, "${getViewName(viewIdA)} is collided with ${getViewName(viewIdB)}, thread: ${Thread.currentThread().id}")
             if (isBall(viewIdA)) {
                 if (isBall(viewIdB)) {
                     RichTapUtils.getInstance().playHaptic(heBallWithBall, 0)
                 } else {
                     RichTapUtils.getInstance().playHaptic(heBallToBound, 0)
                     val view = binding.jboxContainer.findViewById<View>(viewIdA)
-                    val boundCount = view.getTag(R.id.tag_view_contacted_bound_count) as Int + 1
-                    view.setTag(R.id.tag_view_contacted_bound_count, boundCount)
+                    view.increaseBoundCount()
                 }
             } else {
                 if (isBall(viewIdB)) {
                     RichTapUtils.getInstance().playHaptic(heBallToBound, 0)
                     val view = binding.jboxContainer.findViewById<View>(viewIdB)
-                    val boundCount = view.getTag(R.id.tag_view_contacted_bound_count) as Int + 1
-                    view.setTag(R.id.tag_view_contacted_bound_count, boundCount)
+                    view.increaseBoundCount()
                 }
             }
         }
@@ -167,16 +166,35 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
             if (isBall(viewIdA)) {
                 if (!isBall(viewIdB)) {
                     val view = binding.jboxContainer.findViewById<View>(viewIdA)
-                    val boundCount = view.getTag(R.id.tag_view_contacted_bound_count) as Int - 1
-                    view.setTag(R.id.tag_view_contacted_bound_count, boundCount)
+                    view.decreaseBoundCount()
                 }
             } else {
                 if (isBall(viewIdB)) {
                     val view = binding.jboxContainer.findViewById<View>(viewIdB)
-                    val boundCount = view.getTag(R.id.tag_view_contacted_bound_count) as Int - 1
-                    view.setTag(R.id.tag_view_contacted_bound_count, boundCount)
+                    view.decreaseBoundCount()
                 }
             }
+        }
+    }
+
+    fun View.increaseBoundCount() {
+        synchronized(this@DynamicBalls) {
+            val count = getTag(R.id.tag_view_contacted_bound_count) as Int + 1
+            setTag(R.id.tag_view_contacted_bound_count, count)
+        }
+    }
+
+    fun View.decreaseBoundCount() {
+        synchronized(this@DynamicBalls) {
+            val count = getTag(R.id.tag_view_contacted_bound_count) as Int - 1
+            setTag(R.id.tag_view_contacted_bound_count, count)
+        }
+    }
+
+    private fun View.isOnBound(): Boolean {
+        synchronized(this@DynamicBalls) {
+            val count = getTag(R.id.tag_view_contacted_bound_count) as Int
+            return count > 0
         }
     }
 
@@ -196,7 +214,7 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
     }
 
     private fun getNormalizedVelocity(view: View): Int {
-        var vel: Int = 10
+        var vel = 10
         try {
             val body = view.getTag(R.id.wd_view_body_tag) as Body
             vel = (body.linearVelocity.normalize() / 5.0 * 255).toInt()
@@ -208,20 +226,26 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
     }
 
     private fun monitorRollingBalls() {
+        Log.v(TAG, "monitorRollingBalls - enter, thread: ${Thread.currentThread().id}")
+        val startTime = System.currentTimeMillis()
+
         val childCount = binding.jboxContainer.childCount
         for (i in 0 until childCount) {
             val view = binding.jboxContainer.getChildAt(i)
             val isRolling = view.getTag(R.id.tag_view_is_rolling) as Boolean
-            val boundCount = view.getTag(R.id.tag_view_contacted_bound_count) as Int
-            if (boundCount > 0) {  // the ball is on one of edges
+            if (view.isOnBound()) {
                 val lastRotation = view.getTag(R.id.tag_view_last_rotation) as Float
-                if (abs(view.rotation - lastRotation) > 0.01F) {
-                    view.setTag(R.id.tag_view_last_rotation, view.rotation)
+                view.setTag(R.id.tag_view_last_rotation, view.rotation)
+                if (abs(lastRotation - magicCode) < 0.01F) continue
+
+                val delta = abs(view.rotation - lastRotation)
+                //Log.v(TAG, "monitorRollingBalls - rotated: $delta")
+                if (delta > 1.0F) { // set a threshold
                     // The ball is rolling on the edge!
                     if (!isRolling) {
                         view.setTag(R.id.tag_view_is_rolling, true)
                         //val amplitude = getNormalizedVelocity(view)
-                        RichTapUtils.getInstance().playHaptic(heBallRoll, -1, 100)
+                        RichTapUtils.getInstance().playHaptic(heBallRoll, -1, 80)
                     } else {
                         // Adjust amplitude based on ball's rolling speed
                         //RichTapUtils.getInstance().sendLoopParameter(amplitude, 0)
@@ -234,12 +258,15 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
                     }
                 }
             } else {
+                view.setTag(R.id.tag_view_last_rotation, magicCode)
                 view.setTag(R.id.tag_view_is_rolling, false)
                 if (isRolling) {
                     RichTapUtils.getInstance().stop() // TODO: only stop the rolling effect
                 }
             }
         }
+
+        Log.v(TAG, "monitorRollingBalls - exit, time: ${System.currentTimeMillis()-startTime} ms")
     }
 
     class RollingBallMonitorTask(private val activity: DynamicBalls) : TimerTask() {
