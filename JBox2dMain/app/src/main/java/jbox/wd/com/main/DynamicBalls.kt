@@ -23,6 +23,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.floor
 
 class DynamicBalls : AppCompatActivity(), SensorEventListener {
 
@@ -35,6 +36,8 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
 
     private var ballIndex = 0
     private val magicCode = 888F
+    private var maxFallingVelocity = 26.5F
+    private var maxRollingVelocity = 15.0F
     private val rollingMonitor = Timer()
     private lateinit var rollingMonitorTask: TimerTask
 
@@ -148,15 +151,15 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
                 if (isBall(viewIdB)) {
                     RichTapUtils.getInstance().playHaptic(heBallWithBall, 0)
                 } else {
-                    RichTapUtils.getInstance().playHaptic(heBallToBound, 0)
                     val view = binding.jboxContainer.findViewById<View>(viewIdA)
                     view.increaseBoundCount()
+                    RichTapUtils.getInstance().playHaptic(heBallToBound, 0, view.getAmplitude())
                 }
             } else {
                 if (isBall(viewIdB)) {
-                    RichTapUtils.getInstance().playHaptic(heBallToBound, 0)
                     val view = binding.jboxContainer.findViewById<View>(viewIdB)
                     view.increaseBoundCount()
+                    RichTapUtils.getInstance().playHaptic(heBallToBound, 0, view.getAmplitude())
                 }
             }
         }
@@ -198,6 +201,20 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
         }
     }
 
+    fun View.getAmplitude(): Int {
+        val body = getTag(R.id.wd_view_body_tag) as Body
+        val vel = body.linearVelocity.length()
+        if (vel > maxFallingVelocity) maxFallingVelocity = vel
+        return floor(vel / maxFallingVelocity * 255).toInt()
+    }
+
+    fun View.getAmplitude2(): Int {
+        val body = getTag(R.id.wd_view_body_tag) as Body
+        val vel = body.linearVelocity.length()
+        if (vel > maxRollingVelocity) maxRollingVelocity = vel
+        return floor(vel / maxRollingVelocity * 255).toInt()
+    }
+
     private fun getViewName(id: Int): String {
         return when (id) {
             R.id.physics_bound_left -> "Bound-left"
@@ -211,18 +228,6 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
     private fun isBall(id: Int): Boolean {
         return id != R.id.physics_bound_left && id != R.id.physics_bound_right &&
             id != R.id.physics_bound_top && id != R.id.physics_bound_bottom
-    }
-
-    private fun getNormalizedVelocity(view: View): Int {
-        var vel = 10
-        try {
-            val body = view.getTag(R.id.wd_view_body_tag) as Body
-            vel = (body.linearVelocity.normalize() / 5.0 * 255).toInt()
-            if (vel > 255) vel = 255
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return vel
     }
 
     private fun monitorRollingBalls() {
@@ -241,14 +246,13 @@ class DynamicBalls : AppCompatActivity(), SensorEventListener {
                 val delta = abs(view.rotation - lastRotation)
                 //Log.v(TAG, "monitorRollingBalls - rotated: $delta")
                 if (delta > 1.0F) { // set a threshold
-                    // The ball is rolling on the edge!
+                    //Log.v(TAG, "Rolling at velocity: ${view.getAmplitude2()}")
                     if (!isRolling) {
                         view.setTag(R.id.tag_view_is_rolling, true)
-                        //val amplitude = getNormalizedVelocity(view)
-                        RichTapUtils.getInstance().playHaptic(heBallRoll, -1, 80)
+                        RichTapUtils.getInstance().playHaptic(heBallRoll, -1, view.getAmplitude2())
                     } else {
                         // Adjust amplitude based on ball's rolling speed
-                        //RichTapUtils.getInstance().sendLoopParameter(amplitude, 0)
+                        RichTapUtils.getInstance().sendLoopParameter(view.getAmplitude2(), 0)
                     }
                 } else {
                     // The ball has stopped rolling
